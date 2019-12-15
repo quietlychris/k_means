@@ -26,12 +26,17 @@ fn main() {
         (-3.,-3.),
         (-3.1,-3.1),
         (-3.1,-2.9),
+        (-3.2,3.0),
         (1.9,2.1),
         (2.,2.),
         (1.9,1.9),
+        (2.0,1.9),
+        (-4.,3.9),
+        (-4.2,4.1),
+        (-3.9,4.0)
     ];*/
     let mut data = Vec::new();
-    for _ in 0..2000 {
+    for _ in 0..100 {
         data.push((rng.gen_range(0., 5.) as f64,rng.gen_range(0., 5.) as f64));
         data.push((rng.gen_range(-5., -0.) as f64,rng.gen_range(-5., 0.) as f64));
         data.push((rng.gen_range(-5., -2.5) as f64,rng.gen_range(2.5, 5.) as f64));
@@ -42,6 +47,7 @@ fn main() {
     let mut centroids: Vec<_> = Vec::new();
     //centroids.push((-2.0,-2.0));
     //centroids.push((1.5,1.5));
+    //centroids.push((-3.2,3.5));
     let num_centroids = 3;
     for i in 0..num_centroids {
         centroids.push((rng.gen_range(-5., 5.) as f64,rng.gen_range(-5., 5.) as f64));
@@ -51,36 +57,25 @@ fn main() {
 
     // Build the kmeans_list and push a unique point to each of them
     let mut kmeans_list: Vec<KMeanPoint> = Vec::new();
-    // For every point in the data,
     for point in &data {
-        let mut kmeans_point: KMeanPoint = KMeanPoint {point: point.clone(), centroid: centroids.choose(&mut rand::thread_rng()).unwrap().clone(),distance: 0.0 };
-        kmeans_point.distance = ((point.0 - kmeans_point.centroid.0).abs().powf(2.0) + (point.1 - kmeans_point.centroid.1).abs().powf(2.0)).sqrt();
+        // Had started by randomly assigning points to cluster. Don't do this!
+        //let mut kmeans_point: KMeanPoint = KMeanPoint {point: point.clone(), centroid: centroids.choose(&mut rand::thread_rng()).unwrap().clone(),distance: 0.0 };
+        let mut assigned_centroid = centroids[0];
+        for centroid in &centroids {
+            if get_distance(point.clone(),centroid.clone()) < get_distance(point.clone(),assigned_centroid.clone()) {
+                assigned_centroid = centroid.clone();
+            }
+        }
+
+        let kmeans_point : KMeanPoint = KMeanPoint {point: point.clone(), centroid:assigned_centroid, distance: get_distance(point.clone(),assigned_centroid) };
         //println!("{:?}",kmeans_point);
         kmeans_list.push(kmeans_point);
     }
 
+    println!("The length of the kmeans_list is: {}",kmeans_list.len());
     /*for point in &kmeans_list {
         println!("{:?}",point);
     }*/
-
-    for point in &mut kmeans_list {
-        // Calculate the distance to each centroid in the list. If the distance is smaller than the one that exists, replace
-        let mut dist = 0.0;
-        for mut centroid in &centroids {
-            // Calculating the Euclidean distance between the point and the centroid
-            dist = ((point.point.0 - centroid.0).abs().powf(2.0) + (point.point.1 - centroid.1).abs().powf(2.0)).sqrt();
-            // Calculates the distance to each centroid and pushes it to a vector
-            //println!("Distance of {:?} to centroid {:?} = {}",point.point,point.centroid,dist);
-            if dist < point.distance {
-                //println!("Switching {:?}'s assigned centroid from {:?} to {:?}",point,point.centroid,centroid);
-
-                point.centroid = *centroid;
-            }
-            else if dist > point.distance {
-                //println!("Since {} > {} , keeping centroid at {:?} ",dist,point.distance,point.centroid);
-            }
-        }
-    }
 
     /*println!(" ");
     for point in &kmeans_list {
@@ -97,14 +92,17 @@ fn main() {
         ); // and a custom colour
 
         //let mut data3: Vec<(f64,f64)> = vec![(-1.6, -2.7),(2.0,1.0)];
-        let c0: Scatter = Scatter {data: vec![centroids[0].clone()], style: PointStyle::new() }.style(PointStyle::new().colour("green"));
-        let c1: Scatter = Scatter {data: vec![centroids[1].clone()], style: PointStyle::new() }.style(PointStyle::new().colour("blue"));
+        let c1: Scatter = Scatter {data: vec![centroids[0].clone()], style: PointStyle::new() }.style(PointStyle::new().colour("green"));
+        let c2: Scatter = Scatter {data: vec![centroids[1].clone()], style: PointStyle::new() }.style(PointStyle::new().colour("blue"));
+        let c3: Scatter = Scatter {data: vec![centroids[2].clone()], style: PointStyle::new() }.style(PointStyle::new().colour("red"));
+
 
         // The 'view' describes what set of data is drawn
         let v = ContinuousView::new()
             .add(s1)
-            .add(c0)
             .add(c1)
+            .add(c2)
+            .add(c3)
             .x_range(-5., 5.)
             .y_range(-5., 5.)
             .x_label("x-axis")
@@ -119,7 +117,7 @@ fn main() {
         println!("\n");
     }
 
-    for iteration in 0..10 {
+    for iteration in 0..5 {
 
         println!("**** ITERATION #{}",iteration);
         /*for centroid in &centroids {
@@ -128,52 +126,51 @@ fn main() {
 
         for point in &mut kmeans_list {
             // Calculate the distance to each centroid in the list. If the distance is smaller than the one that exists, replace
-            let mut dist = 0.0;
-            for mut centroid in &centroids {
-                // Calculating the Euclidean distance between the point and the centroid
-                dist = ((point.point.0 - centroid.0).abs().powf(2.0) + (point.point.1 - centroid.1).abs().powf(2.0)).sqrt();
-                // Calculates the distance to each centroid and pushes it to a vector
-                //println!("Distance of {:?} to centroid {:?} = {}",point.point,point.centroid,dist);
-                if dist < point.distance {
-                    //println!("Switching {:?}'s assigned centroid from {:?} to {:?}",point,point.centroid,centroid);
-                    point.centroid = *centroid;
-                }
-                else {
-                    //println!("Since {} < {}, keeping centroid at {:?} ",point.distance,dist,point.centroid);
+            for centroid in &centroids {
+                if get_distance(point.point,centroid.clone()) < point.distance {
+                    point.centroid = centroid.clone();
+                    point.distance = get_distance(point.point,point.centroid);
                 }
             }
         }
-
-        /*for point in &kmeans_list {
-            println!("{:?}",point);
-        }*/
-
-        for d in &centroids {
-            let ct = format!("({:.2},{:.2})",d.0,d.1);
-            println!("{}",ct);
-        }
-
-        /*for point in &kmeans_list {
-            let ct = format!("({:.2},{:.2})",point.centroid.0,point.centroid.1);
-            println!("{} should be {} or {}",ct,ct0,ct1);
-        }*/
-
-        println!("{}",centroids.len());
 
         // Doing the data visualization here
         let mut vis_vec: Vec<Vec<(f64,f64)>> =  Vec::new();
-        for a in & centroids {
+        for _ in &centroids {
             vis_vec.push(Vec::new());
         }
         for point in &kmeans_list {
+            let mut check = 0;
             for i in 0..centroids.len() {
-                if point.centroid == centroids[i] {
+                if get_distance(point.centroid,centroids[i].clone()) < 0.01 {
                     vis_vec[i].push(point.point);
                 }
+                else {
+                    check = 1;
+                }
+            }
+            if check != 0 {
+                println!("{:?} != {:?}",point.centroid,centroids);
             }
         }
+        let mut element_sum = 0;
+        for j in 0..vis_vec.len() {
+            element_sum = element_sum + vis_vec[j].len();
+        }
+        println!("The total number of elements in vis_vec is: {}",element_sum);
+
         //dbg!(&vis_vec[0]);
 
+        /*for centroid in &centroids {
+            println!("Centroid {:?}: ",centroid);
+            for point in &kmeans_list {
+                if point.centroid == centroid.clone() {
+                    println!("{:?}",point);
+                }
+            }
+        }*/
+
+        println!("The length of the kmeans_list is: {}",kmeans_list.len());
         // We now have a kmeans_list of points with their nearest centroid and distance to that centroid
         // Now we need to move the centroids to the center of the cluster of all points assigned to them
         for i in 0..centroids.len() {
@@ -200,6 +197,7 @@ fn main() {
             //println!("New location for centroid #{} is now: {:?}",i,centroids[i]);
         }
 
+        // Doing the data visualization here
         {
             // We create our scatter plot from the data
             let s1: Scatter = Scatter::from_slice(&vis_vec[0]).style(
@@ -244,8 +242,13 @@ fn main() {
             Command::new("cairosvg").arg(svg_path).arg("-o").arg(png_path).output().expect("failed to convert .svg file to .png file");
 
             // Sleeps the thread for visualization
-            std::thread::sleep(std::time::Duration::from_millis(100));
+            std::thread::sleep(std::time::Duration::from_millis(1000));
             println!("\n");
         }
     }
+}
+
+fn get_distance(a: (f64,f64), b: (f64,f64)) -> f64 {
+    let dist = ((a.0 - b.0).abs().powf(2.0) + (a.1 - b.1).abs().powf(2.0)).sqrt();
+    dist
 }
