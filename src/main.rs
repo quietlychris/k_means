@@ -3,10 +3,8 @@ use plotlib::repr::Scatter;
 use plotlib::style::{PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
 
-use rand::seq::SliceRandom;
 use rand::Rng;
 
-use std::fs;
 use std::process::Command;
 
 #[derive(Debug, Clone, Copy)]
@@ -144,10 +142,7 @@ fn main() {
             }
             centroids[i] = (x_sum / counter, y_sum / counter);
         }
-        print!("Previous centroids: ");
-        for prev_cen in &prev_centroids {
-            print!("({:.2},{:.2}), ", prev_cen.0, prev_cen.1);
-        }
+
         print!("\n");
         print!("Current centroids: ");
         for cen in &centroids {
@@ -164,24 +159,12 @@ fn main() {
             }
 
             for point in &kmeans_list {
-                let mut check = false;
                 let mut counter = 0;
                 for centroid in &centroids {
                     if get_distance(centroids[point.cluster], centroid.clone()) < 0.05 {
                         vis_vec[counter].push(point.point);
-                        check = true;
                     }
                     counter += 1;
-                }
-                if check == false {
-                    //print!("A point at ({:.2},{:.2}) with centroid ({:.2},{:.2}) not pushed to vis since its cen !=",
-                    //point.point.0,point.point.1,centroids[point.cluster].0,centroids[point.cluster].1);
-                    for centroid in &centroids {
-                        //print!("({:.2},{:.2}) ",centroid.0,centroid.1);
-                        //check = true;
-                    }
-                    //print!("\n");
-                    //println!("; dist = {:.3} ",get_distance(centroids[point.cluster],centroid.clone()));
                 }
             }
 
@@ -199,7 +182,7 @@ fn main() {
                 PointStyle::new()
                     .marker(PointMarker::Square) // setting the marker to be a square
                     .colour("green"),
-            ); // and a custom colour
+            );
 
             let s2: Scatter = Scatter::from_slice(&vis_vec[1]).style(
                 PointStyle::new()
@@ -270,7 +253,7 @@ fn print_point(a: (f64, f64)) {
 
 mod tests {
 
-    use crate::*;
+    use crate::get_distance;
 
     #[test]
     fn check_gd() {
