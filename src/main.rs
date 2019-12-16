@@ -54,9 +54,7 @@ fn main() {
     for point in &data {
         let mut assigned_centroid = centroids[0];
         for centroid in &centroids {
-            if get_distance(*point, *centroid)
-                < get_distance(*point, assigned_centroid)
-            {
+            if get_distance(*point, *centroid) < get_distance(*point, assigned_centroid) {
                 assigned_centroid = centroid.clone();
             }
         }

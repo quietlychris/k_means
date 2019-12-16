@@ -84,7 +84,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "plotlib"
 version = "0.4.0"
-source = "git+https://github.com/quietlychris/plotlib#95ce2400d4e6d4de6ef7110756fca35894d778a8"
+source = "git+https://github.com/quietlychris/plotlib#1f213b518709ce1914d157c08d9f35069fb707db"
 dependencies = [
  "failure 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "svg 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",

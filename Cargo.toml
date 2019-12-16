@@ -8,4 +8,5 @@ edition = "2018"
 
 [dependencies]
 plotlib = { git = "https://github.com/quietlychris/plotlib", branch = "master" }
+#plotlib = { path = "../forked_repos/plotlib" }
 rand = "0.7.2"

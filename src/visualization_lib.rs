@@ -3,6 +3,7 @@ use plotlib::repr::Scatter;
 use plotlib::style::{PointMarker, PointStyle};
 use plotlib::view::ContinuousView;
 
+use rand::Rng;
 use std::process::Command;
 
 use crate::*;
@@ -33,56 +34,36 @@ pub fn kmeans_plot(kmeans_list: Vec<KMeansPoint>, centroids: Vec<(f64, f64)>, pa
         element_sum
     );
 
-    let scatter_plots: Vec<Scatter> = Vec::new();
-
-    // We create our scatter plot from the data
-    let s1: Scatter = Scatter::from_slice(&vis_vec[0]).style(
-        PointStyle::new()
-            .marker(PointMarker::Square) // setting the marker to be a square
-            .colour("green"),
-    );
-
-    let s2: Scatter = Scatter::from_slice(&vis_vec[1]).style(
-        PointStyle::new()
-            .marker(PointMarker::Square) // setting the marker to be a square
-            .colour("blue"),
-    );
-
-    let s3: Scatter = Scatter::from_slice(&vis_vec[2]).style(
-        PointStyle::new()
-            .marker(PointMarker::Square) // setting the marker to be a square
-            .colour("red"),
-    );
+    let mut scatter_plots: Vec<Scatter> = Vec::new();
+    for i in 0..centroids.len() {
+        let mut rng = rand::thread_rng();
+        let color = format!("#{}", rng.gen_range(0, 999999).to_string(),);
+        let s: Scatter = Scatter::from_slice(&vis_vec[i]).style(
+            PointStyle::new()
+                .marker(PointMarker::Square) // setting the marker to be a square
+                .colour(&color),
+        );
+        let c: Scatter = Scatter {
+            data: vec![centroids[i].clone()],
+            style: PointStyle::new(),
+        }
+        .style(PointStyle::new().colour(color));
+        scatter_plots.push(s);
+        scatter_plots.push(c);
+    }
 
     //let mut data3: Vec<(f64,f64)> = vec![(-1.6, -2.7),(2.0,1.0)];
-    let c1: Scatter = Scatter {
-        data: vec![centroids[0].clone()],
-        style: PointStyle::new(),
-    }
-    .style(PointStyle::new().colour("green"));
-    let c2: Scatter = Scatter {
-        data: vec![centroids[1].clone()],
-        style: PointStyle::new(),
-    }
-    .style(PointStyle::new().colour("blue"));
-    let c3: Scatter = Scatter {
-        data: vec![centroids[2].clone()],
-        style: PointStyle::new(),
-    }
-    .style(PointStyle::new().colour("red"));
 
-    // The 'view' describes what set of data is drawn
-    let v = ContinuousView::new()
-        .add(s1)
-        .add(s2)
-        .add(s3)
-        .add(c1)
-        .add(c2)
-        .add(c3)
+    let mut v = ContinuousView::new()
         .x_range(-5., 5.)
         .y_range(-5., 5.)
         .x_label("x-axis")
         .y_label("y-axis");
+
+    for i in 0..scatter_plots.len() {
+        v.representations.push(Box::new(scatter_plots[i].clone()));
+    }
+    //v.add(scatter_plots[0]);
 
     // A page with a single view is then saved to an SVG file
     let svg_path = path_root.clone() + ".svg";
